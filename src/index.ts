@@ -19,13 +19,18 @@ bot.on("message", async (msg: Message) => {
   const chatId = msg.chat.id;
   const text = msg.text;
   const user = msg.from?.first_name;
+  let content;
+  if (user) {
+    content = `${user}: ${text!}`;
+  } else {
+    content = text!;
+  }
 
   try {
     const userMessages: ChatCompletionRequestMessage[] = [
       {
         role: "user",
-        content: text!,
-        name: user,
+        content,
       },
     ];
     const completion = await openai.createChatCompletion({
