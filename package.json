@@ -12,7 +12,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/mongodb": "^4.0.7",
     "dotenv": "^16.0.3",
+    "mongodb": "^5.1.0",
     "node-telegram-bot-api": "^0.61.0",
     "openai": "^3.2.1"
   },
