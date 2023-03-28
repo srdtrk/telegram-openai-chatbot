@@ -1,0 +1,12 @@
+{
+  "name": "telegram-openai-chatbot",
+  "version": "1.0.0",
+  "description": "This is a template for me to create telegram bots using openai's gpt API.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
