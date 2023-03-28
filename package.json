@@ -4,7 +4,9 @@
   "description": "This is a template for me to create telegram bots using openai's gpt API.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "start": "ts-node src/index.ts"
   },
   "keywords": [],
   "author": "",
