@@ -13,5 +13,8 @@
     "dotenv": "^16.0.3",
     "node-telegram-bot-api": "^0.61.0",
     "openai": "^3.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.15.10"
   }
 }
