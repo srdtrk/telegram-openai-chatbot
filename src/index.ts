@@ -25,14 +25,24 @@ client.connect();
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN!, { polling: true });
 
 bot.on("message", async (msg: Message) => {
+  // console.log(msg);
+  const botUsername = process.env.TELEGRAM_BOT_USERNAME!;
   const chatId = msg.chat.id;
   const text = msg.text;
   const user = msg.from!;
 
   if (!text) {
-    bot.sendMessage(chatId, "Error: No text provided.");
+    if (msg.photo) {
+      bot.sendMessage(
+        chatId,
+        "Sorry, I can't process images yet. Please send text."
+      );
+    }
     return;
   }
+
+  const isMentioned = text.includes(`@${botUsername}`);
+  const isCommand = text.startsWith("/");
 
   const messageCollection = client.db("mydb").collection("telegram_test");
   // Save the message to the database
@@ -46,16 +56,20 @@ bot.on("message", async (msg: Message) => {
     content: text,
     timestamp: new Date(msg.date * 1000),
   };
+  await messageCollection.insertOne(messageData);
 
-  // Get the last 10 messages for the current chat
+  // Exit if the message is not a mention
+  if (msg.chat.type == "group" && !isMentioned) {
+    return;
+  }
+
+  // Get the last 15 messages for the current chat
   let lastMessages: MessageDocument[] = await messageCollection
     .find<MessageDocument>({ chatId })
     .sort({ timestamp: -1 })
-    .limit(10)
+    .limit(15)
     .toArray();
   lastMessages = lastMessages.reverse();
-  await messageCollection.insertOne(messageData);
-  lastMessages.push(messageData);
 
   try {
     const contextMessages: ChatCompletionRequestMessage[] = lastMessages.map(
