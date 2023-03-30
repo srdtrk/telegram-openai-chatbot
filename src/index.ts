@@ -1,5 +1,4 @@
-import { Configuration, OpenAIApi } from "openai";
-import { ChatCompletionRequestMessage } from "openai";
+import { Configuration, OpenAIApi, ChatCompletionRequestMessage } from "openai";
 import * as dotenv from "dotenv";
 import TelegramBot from "node-telegram-bot-api";
 import { Message } from "node-telegram-bot-api";
@@ -19,17 +18,17 @@ const uri = process.env.MONGODB_URI!;
 const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
-client.connect();
 
 // Configure Telegram
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN!, { polling: true });
 
 bot.on("message", async (msg: Message) => {
-  // console.log(msg);
+  console.log(msg);
   const botUsername = process.env.TELEGRAM_BOT_USERNAME!;
   const chatId = msg.chat.id;
   const text = msg.text;
   const user = msg.from!;
+  client.connect();
 
   if (!text) {
     if (msg.photo) {
@@ -37,6 +36,27 @@ bot.on("message", async (msg: Message) => {
         chatId,
         "Sorry, I can't process images yet. Please send text."
       );
+    }
+    if (msg.location) {
+      const userCollection = client.db("mydb").collection("telegram_user_data");
+      const userData = await userCollection.updateOne(
+        {
+          userId: user.id,
+        },
+        {
+          $set: {
+            location: msg.location,
+          },
+        },
+        { upsert: true }
+      );
+      console.log(userData);
+      if (userData.acknowledged) {
+        bot.sendMessage(
+          chatId,
+          `Your location has been updated @${user.username!}.`
+        );
+      }
     }
     return;
   }
@@ -60,6 +80,13 @@ bot.on("message", async (msg: Message) => {
 
   // Exit if the message is not a mention
   if (msg.chat.type == "group" && !isMentioned) {
+    return;
+  }
+  if (isCommand) {
+    bot.sendMessage(
+      chatId,
+      "There are no commands yet. Please message me to chat."
+    );
     return;
   }
 
