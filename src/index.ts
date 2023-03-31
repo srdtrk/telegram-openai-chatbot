@@ -104,6 +104,9 @@ bot.on("message", async (msg: Message) => {
     );
     contextMessages.unshift(MessageData.SYSTEM_PROMPT);
     console.log(contextMessages);
+
+    // send messages to gpt-4
+    await bot.sendChatAction(chatId, "typing");
     const completion = await openai.createChatCompletion({
       model: "gpt-4",
       messages: contextMessages,
