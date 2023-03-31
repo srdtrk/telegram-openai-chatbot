@@ -5,6 +5,7 @@ import { Message } from "node-telegram-bot-api";
 import { MongoClient, ServerApiVersion } from "mongodb";
 import { MessageDocument, MessageData } from "./types";
 import { handleCommand } from "./commands";
+import { handleContent } from "./content_handlers";
 
 dotenv.config();
 
@@ -32,33 +33,7 @@ bot.on("message", async (msg: Message) => {
   client.connect();
 
   if (!text) {
-    if (msg.photo) {
-      bot.sendMessage(
-        chatId,
-        "Sorry, I can't process images yet. Please send text."
-      );
-    }
-    if (msg.location) {
-      const userCollection = client.db("mydb").collection("telegram_user_data");
-      const userData = await userCollection.updateOne(
-        {
-          userId: user.id,
-        },
-        {
-          $set: {
-            location: msg.location,
-          },
-        },
-        { upsert: true }
-      );
-      console.log(userData);
-      if (userData.acknowledged) {
-        bot.sendMessage(
-          chatId,
-          `Your location has been updated @${user.username!}.`
-        );
-      }
-    }
+    await handleContent(bot, client, msg, user, chatId);
     return;
   } else if (text.startsWith("/")) {
     handleCommand(bot, client, text, user, chatId);
