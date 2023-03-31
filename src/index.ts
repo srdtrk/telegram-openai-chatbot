@@ -4,6 +4,7 @@ import TelegramBot from "node-telegram-bot-api";
 import { Message } from "node-telegram-bot-api";
 import { MongoClient, ServerApiVersion } from "mongodb";
 import { MessageDocument, MessageData } from "./types";
+import { handleCommand } from "./commands";
 
 dotenv.config();
 
@@ -59,10 +60,12 @@ bot.on("message", async (msg: Message) => {
       }
     }
     return;
+  } else if (text.startsWith("/")) {
+    handleCommand(bot, client, text, user, chatId);
+    return;
+  } else if (msg.chat.type == "group" && !text.includes(`@${botUsername}`)) {
+    return;
   }
-
-  const isMentioned = text.includes(`@${botUsername}`);
-  const isCommand = text.startsWith("/");
 
   const messageCollection = client.db("mydb").collection("telegram_test");
   // Save the message to the database
@@ -77,18 +80,6 @@ bot.on("message", async (msg: Message) => {
     timestamp: new Date(msg.date * 1000),
   };
   await messageCollection.insertOne(messageData);
-
-  // Exit if the message is not a mention
-  if (msg.chat.type == "group" && !isMentioned) {
-    return;
-  }
-  if (isCommand) {
-    bot.sendMessage(
-      chatId,
-      "There are no commands yet. Please message me to chat."
-    );
-    return;
-  }
 
   // Get the last 15 messages for the current chat
   let lastMessages: MessageDocument[] = await messageCollection
